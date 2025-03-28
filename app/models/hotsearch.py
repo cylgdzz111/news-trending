@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 from datetime import datetime
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.base import MongoBaseModel
 
@@ -16,9 +16,9 @@ class HotSearchModel(MongoBaseModel):
     content: Optional[str] = Field(None, description="相关内容")
     tags: List[str] = Field(default_factory=list, description="标签")
     
-    class Config:
-        collection = "hot_searches"
-        schema_extra = {
+    model_config = {
+        "collection": "hot_searches",
+        "json_schema_extra": {
             "example": {
                 "platform": "weibo",
                 "title": "2023世界杯",
@@ -31,4 +31,5 @@ class HotSearchModel(MongoBaseModel):
                 "created_at": "2023-01-01T12:00:00",
                 "updated_at": "2023-01-01T12:00:00"
             }
-        } 
+        }
+    } 

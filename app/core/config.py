@@ -1,5 +1,17 @@
 from typing import List, Optional
-from pydantic import BaseSettings, AnyHttpUrl
+from pydantic import AnyHttpUrl, Field
+from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
+
+
+# 获取项目根目录
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent.parent
+
+
+# 环境变量文件路径
+env_path = get_project_root() / ".env"
 
 
 class Settings(BaseSettings):
@@ -13,23 +25,38 @@ class Settings(BaseSettings):
     CORS_ORIGINS: List[AnyHttpUrl] = []
     
     # 数据库配置
-    MONGODB_URL: str = "mongodb://localhost:27017/news_trending"
-    REDIS_URL: str = "redis://localhost:6379/0"
+    MONGODB_URL: str = Field(
+        default="mongodb://localhost:27017/news_trending",
+        description="MongoDB连接字符串"
+    )
+    REDIS_URL: str = Field(
+        default="redis://localhost:6379/0",
+        description="Redis连接字符串"
+    )
     
     # Celery配置
-    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    CELERY_BROKER_URL: str = Field(
+        default="redis://localhost:6379/1",
+        description="Celery Broker URL"
+    )
+    CELERY_RESULT_BACKEND: str = Field(
+        default="redis://localhost:6379/2",
+        description="Celery Result Backend URL"
+    )
     
-    # 爬虫配置
-    CRAWL_FREQUENCY: int = 60  # 爬取频率(分钟)
+    # 数据采集配置
+    FETCH_FREQUENCY: int = 60  # 获取数据频率(分钟)
     HISTORY_DAYS: int = 7  # 历史数据保留天数
     
     # 平台配置
     PLATFORMS: List[str] = ["weibo", "baidu", "zhihu", "douyin", "bilibili"]
     
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = {
+        "case_sensitive": True,
+        "env_file": str(env_path),
+        "env_file_encoding": "utf-8",
+        "extra": "ignore"
+    }
 
 
 settings = Settings() 

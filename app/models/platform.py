@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, ClassVar
 from datetime import datetime
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.base import MongoBaseModel
 
@@ -15,9 +15,9 @@ class PlatformModel(MongoBaseModel):
     crawl_frequency: int = Field(60, description="爬取频率(分钟)")
     last_crawl: Optional[datetime] = Field(None, description="上次爬取时间")
     
-    class Config:
-        collection = "platforms"
-        schema_extra = {
+    model_config = {
+        "collection": "platforms",
+        "json_schema_extra": {
             "example": {
                 "name": "weibo",
                 "display_name": "微博",
@@ -29,4 +29,5 @@ class PlatformModel(MongoBaseModel):
                 "created_at": "2023-01-01T10:00:00",
                 "updated_at": "2023-01-01T10:00:00"
             }
-        } 
+        }
+    } 

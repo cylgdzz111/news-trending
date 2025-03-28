@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -40,11 +40,12 @@ class PlatformResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class PlatformList(BaseModel):
     """平台列表响应"""
-    data: list[PlatformResponse]
+    data: List[PlatformResponse]
     total: int 

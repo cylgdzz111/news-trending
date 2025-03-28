@@ -11,11 +11,9 @@ services:
       - "8000:8000"
     volumes:
       - ./logs:/app/logs
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/news_trending
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - ./.env:/app/.env
+    env_file:
+      - .env
     depends_on:
       - mongo
       - redis
@@ -31,11 +29,9 @@ services:
     restart: always
     volumes:
       - ./logs:/app/logs
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/news_trending
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - ./.env:/app/.env
+    env_file:
+      - .env
     depends_on:
       - mongo
       - redis
@@ -52,11 +48,9 @@ services:
     restart: always
     volumes:
       - ./logs:/app/logs
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/news_trending
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - ./.env:/app/.env
+    env_file:
+      - .env
     depends_on:
       - mongo
       - redis
@@ -73,11 +67,10 @@ services:
     restart: always
     ports:
       - "5555:5555"
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/news_trending
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    volumes:
+      - ./.env:/app/.env
+    env_file:
+      - .env
     depends_on:
       - worker
       - beat
