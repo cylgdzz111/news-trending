@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # API服务
+  api:
+    build: .
+    image: news-trending-api
+    container_name: news-trending-api
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/news_trending
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app-network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  # Celery Worker - 处理任务
+  worker:
+    build: .
+    image: news-trending-worker
+    container_name: news-trending-worker
+    restart: always
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/news_trending
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      - mongo
+      - redis
+      - api
+    networks:
+      - app-network
+    command: celery -A tasks.celery_app worker --loglevel=info
+
+  # Celery Beat - 定时任务调度
+  beat:
+    build: .
+    image: news-trending-beat
+    container_name: news-trending-beat
+    restart: always
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/news_trending
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      - mongo
+      - redis
+      - api
+    networks:
+      - app-network
+    command: celery -A tasks.celery_app beat --loglevel=info
+
+  # Flower - Celery监控
+  flower:
+    build: .
+    image: news-trending-flower
+    container_name: news-trending-flower
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/news_trending
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      - worker
+      - beat
+    networks:
+      - app-network
+    command: celery -A tasks.celery_app flower --port=5555
+
+  # MongoDB
+  mongo:
+    image: mongo:4.4
+    container_name: news-trending-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  # Redis
+  redis:
+    image: redis:6.2-alpine
+    container_name: news-trending-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge 
